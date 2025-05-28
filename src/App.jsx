@@ -6,6 +6,7 @@ import PersonalizedLearning from "./pages/PersonalizedLearning";
 import RubricGenerator from "./pages/RubricGenerator";
 import NotFound from "./pages/NotFound";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
