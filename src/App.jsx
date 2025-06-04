@@ -5,8 +5,11 @@ import Assignments from "./pages/Assignments";
 import PersonalizedLearning from "./pages/PersonalizedLearning";
 import RubricGenerator from "./pages/RubricGenerator";
 import NotFound from "./pages/NotFound";
+import SummarizePdf from "./pages/SummarizePdf";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
+import ExtractQuestions from "./pages/ExtractQuestions";
+import ChapterSummaryGenerator from "./pages/ChapterSummaryGenerator";
 
 function App() {
   return (
@@ -14,9 +17,12 @@ function App() {
       <Routes>
         <Route path="/" />
         <Route path="/summary" element={<Summary />} />
-        <Route path="/question-generator" element={<QuestionGenerator />} />
+        {/* <Route path="/question-generator" element={<QuestionGenerator />} /> */}
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/rubric-generator" element={<RubricGenerator />} />
+        <Route path="/summarize-pdf" element={<SummarizePdf />} />
+        <Route path="/question-generator" element={<ExtractQuestions />} />
+        <Route path="/chapter-summary" element={<ChapterSummaryGenerator />} />
         <Route
           path="/personalized-learning"
           element={<PersonalizedLearning />}

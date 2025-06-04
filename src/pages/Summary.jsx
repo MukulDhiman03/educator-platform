@@ -2,16 +2,20 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
+import jsPDF from "jspdf";
+import PptxGenJS from "pptxgenjs";
 
 const Summary = () => {
   const [chapter, setChapter] = useState("");
   const [question, setQuestion] = useState("");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSummary, setIsSummary] = useState(false);
 
   const handleGenerateResponse = async () => {
     if (!chapter || !question) return toast.warn("Please enter all fields.");
     setLoading(true);
+    setIsSummary(false);
     try {
       const response = await axios.post(
         "http://localhost:8000/generate_response",
@@ -23,17 +27,16 @@ const Summary = () => {
       setOutput(response.data.response);
       setLoading(false);
       setQuestion("");
-      console.log(response);
     } catch (e) {
       toast.error("Failed to get answer. Please try again.");
       setLoading(false);
-      console.log(e);
     }
   };
 
   const handleGenerateSummary = async () => {
     if (!chapter) return toast.warn("Select a chapter first.");
     setLoading(true);
+    setIsSummary(true);
     try {
       const response = await axios.post(
         "http://localhost:8000/generate_chapter_summary",
@@ -43,11 +46,9 @@ const Summary = () => {
       );
       setOutput(response.data.response);
       setLoading(false);
-      console.log(response);
     } catch (e) {
       toast.error("Failed to get summary. Please try again.");
       setLoading(false);
-      console.log(e);
     }
   };
 
@@ -57,8 +58,53 @@ const Summary = () => {
     toast.success("Output copied to clipboard!");
   };
 
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    const lines = doc.splitTextToSize(output, 180);
+    doc.text(lines, 10, 10);
+    doc.save("Chapter_Summary.pdf");
+  };
+
+  const downloadPPT = () => {
+    const pptx = new PptxGenJS();
+    const slide = pptx.addSlide();
+
+    // Title
+    slide.addText("Chapter Summary", {
+      x: 0.5,
+      y: 0.3,
+      fontSize: 24,
+      bold: true,
+      color: "003366",
+    });
+
+    // Prepare bullet points (max ~10 per slide)
+    const points = output.split("\n").filter((line) => line.trim() !== "");
+    const maxPerSlide = 10;
+    const slides = [];
+
+    for (let i = 0; i < points.length; i += maxPerSlide) {
+      slides.push(points.slice(i, i + maxPerSlide));
+    }
+
+    slides.forEach((chunk, index) => {
+      const newSlide = index === 0 ? slide : pptx.addSlide();
+      newSlide.addText(chunk, {
+        x: 0.5,
+        y: 1.0,
+        fontSize: 14,
+        color: "000000",
+        bullet: true,
+        lineSpacingMultiple: 1.2,
+      });
+    });
+
+    pptx.writeFile("Chapter_Summary.pptx");
+  };
+
   const clearOutput = () => {
     setOutput("");
+    setIsSummary(false);
   };
 
   return (
@@ -72,6 +118,10 @@ const Summary = () => {
         <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">
           📚 Chapter Summarizer
         </h1>
+        <p className="text-center text-sm text-gray-600 mb-6">
+          Generate answers using chapter and question OR just generate summary
+          by selecting chapter only.
+        </p>
 
         {/* Select Chapter */}
         <label className="block mb-2 font-semibold text-gray-700">
@@ -87,7 +137,6 @@ const Summary = () => {
           <option value="CELL CYCLE AND CELL DIVISION">
             CELL CYCLE AND CELL DIVISION
           </option>
-          {/* <option value="Chemistry - Reactions">Chemistry - Reactions</option> */}
         </select>
 
         {/* Question */}
@@ -136,32 +185,35 @@ const Summary = () => {
             className="bg-indigo-50 p-6 rounded-xl border border-indigo-300 shadow-lg text-indigo-900 font-medium whitespace-pre-line"
           >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+              {/* <h2 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
                 <span>📄 Output Summary</span>
-                <svg
-                  className="w-5 h-5 text-indigo-500 animate-pulse"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </h2>
-              <div className="flex gap-2">
+              </h2> */}
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={copyOutputToClipboard}
                   className="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition text-sm"
                 >
                   Copy Output
                 </button>
+                {isSummary && (
+                  <>
+                    <button
+                      onClick={downloadPDF}
+                      className="px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm"
+                    >
+                      Download PDF
+                    </button>
+                    <button
+                      onClick={downloadPPT}
+                      className="px-4 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm"
+                    >
+                      Download PPT
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={clearOutput}
-                  className="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm"
+                  className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
                 >
                   Clear Output
                 </button>
