@@ -10,6 +10,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import ExtractQuestions from "./pages/ExtractQuestions";
 import ChapterSummaryGenerator from "./pages/ChapterSummaryGenerator";
+import GenerateQuestionsFromPrompt from "./pages/GenerateQuestionsFromPrompt";
 
 function App() {
   return (
@@ -23,6 +24,10 @@ function App() {
         <Route path="/summarize-pdf" element={<SummarizePdf />} />
         <Route path="/question-generator" element={<ExtractQuestions />} />
         <Route path="/chapter-summary" element={<ChapterSummaryGenerator />} />
+        <Route
+          path="/question_from_prompt"
+          element={<GenerateQuestionsFromPrompt />}
+        />
         <Route
           path="/personalized-learning"
           element={<PersonalizedLearning />}
