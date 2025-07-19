@@ -22,7 +22,7 @@ const ExtractQuestions = () => {
       formData.append("save_path", "math");
 
       const response = await axios.post(
-        "http://localhost:8000/generate_questions/",
+        "http://13.201.230.224:8001/generate_questions/",
         formData
       );
 
