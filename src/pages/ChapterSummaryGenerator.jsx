@@ -24,7 +24,7 @@ const ChapterSummaryGenerator = () => {
       formData.append("save_path", "math");
 
       const response = await axios.post(
-        "http://localhost:8000/generate_chapter_summary/",
+        "http://13.201.230.224:8000/generate_chapter_summary/",
         formData
       );
 
