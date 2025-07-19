@@ -30,7 +30,7 @@ const ExtractQuestions = () => {
       formData.append("question", prompt);
 
       const response = await axios.post(
-        "http://localhost:8000/generate_questions_from_prompt/",
+        "http://13.201.230.224:8003/generate_questions_from_prompt/",
         formData
       );
       console.log(response);

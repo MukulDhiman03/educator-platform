@@ -26,7 +26,7 @@ const SummarizePdf = () => {
       formData.append("save_path", "file");
 
       const response = await axios.post(
-        "http://localhost:8000/generate_summary/",
+        "http://13.201.230.224:8002/generate_summary/",
         formData,
         { responseType: "blob" }
       );
