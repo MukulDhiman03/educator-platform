@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
+import "react-toastify/dist/ReactToastify.css";
 
 const ExtractQuestions = () => {
   const [pdfFile, setPdfFile] = useState(null);
-  const [prompt, setPrompt] = useState(""); // user input prompt
+  const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState([]);
 
@@ -26,17 +27,27 @@ const ExtractQuestions = () => {
     try {
       const formData = new FormData();
       formData.append("file", pdfFile);
-      formData.append("save_path", "math"); // you can make this dynamic if needed
+      formData.append("save_path", "math");
       formData.append("question", prompt);
 
       const response = await axios.post(
-        "http://13.201.230.224:8003/generate_questions_from_prompt/",
+        "http://13.201.230.224:8004/get_question_answers_from_prompt/",
         formData
       );
-      console.log(response);
+
       const output = response.data;
-      const qList = Array.isArray(output) ? output : [output]; // fallback if not array
-      setQuestions(qList);
+
+      const qnaList = Object.keys(output)
+        .filter((key) => key.startsWith("question_"))
+        .map((qKey) => {
+          const index = qKey.split("_")[1];
+          return {
+            question: output[qKey],
+            answer: output[`answer_${index}`] || "No answer found.",
+          };
+        });
+
+      setQuestions(qnaList);
       toast.success("Questions extracted successfully!");
     } catch (error) {
       toast.error("Failed to extract questions. Please try again.");
@@ -48,7 +59,10 @@ const ExtractQuestions = () => {
 
   const handleCopyToClipboard = () => {
     if (questions.length === 0) return;
-    navigator.clipboard.writeText(questions.join("\n"));
+    const text = questions
+      .map((q, i) => `Q${i + 1}. ${q.question}\nA${i + 1}. ${q.answer}\n`)
+      .join("\n");
+    navigator.clipboard.writeText(text);
     toast.success("Questions copied to clipboard!");
   };
 
@@ -133,20 +147,30 @@ const ExtractQuestions = () => {
           </div>
         )}
 
-        {/* Output */}
+        {/* Output: Questions and Answers */}
         {!loading && questions.length > 0 && (
           <motion.div
-            key={questions.join("")}
+            key={questions.map((q) => q.question).join("")}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className="mt-6 bg-indigo-50 p-6 rounded-xl border border-indigo-300 shadow-md text-indigo-900"
           >
-            <h2 className="text-xl font-bold mb-4">📝 Extracted Questions</h2>
-            <ul className="list-disc ml-5 space-y-2">
-              {questions.map((q, i) => (
-                <li key={i} className="leading-relaxed">
-                  {q}
+            <h2 className="text-xl font-bold mb-4">
+              📝 Extracted Questions & Answers
+            </h2>
+            <ul className="space-y-4">
+              {questions.map((item, index) => (
+                <li
+                  key={index}
+                  className="bg-white p-4 rounded-xl shadow-sm border border-gray-200"
+                >
+                  <p className="font-semibold text-indigo-700">
+                    Q{index + 1}. {item.question}
+                  </p>
+                  <p className="text-gray-800 mt-2">
+                    <span className="font-semibold">Answer:</span> {item.answer}
+                  </p>
                 </li>
               ))}
             </ul>
